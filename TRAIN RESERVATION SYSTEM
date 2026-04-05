@@ -1,0 +1,107 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+struct Passenger {
+    int id;
+    string name;
+};
+
+struct Train {
+    int trainNo;
+    string trainName;
+    int totalSeats;
+    int availableSeats;
+    vector<Passenger> confirmedList;
+    queue<Passenger> waitingList;
+};
+
+// Function to book ticket
+void bookTicket(Train &t, Passenger p) {
+    if (t.availableSeats > 0) {
+        t.confirmedList.push_back(p);
+        t.availableSeats--;
+        cout << "Ticket Confirmed for " << p.name << endl;
+    } else {
+        t.waitingList.push(p);
+        cout << "Added to Waiting List: " << p.name << endl;
+    }
+}
+
+// Function to cancel ticket
+void cancelTicket(Train &t, int passengerId) {
+    bool found = false;
+
+    for (auto it = t.confirmedList.begin(); it != t.confirmedList.end(); ++it) {
+        if (it->id == passengerId) {
+            cout << "Ticket Cancelled for " << it->name << endl;
+            t.confirmedList.erase(it);
+            t.availableSeats++;
+            found = true;
+
+            // Move from waiting list if exists
+            if (!t.waitingList.empty()) {
+                Passenger p = t.waitingList.front();
+                t.waitingList.pop();
+                t.confirmedList.push_back(p);
+                t.availableSeats--;
+                cout << "Waiting List Passenger Confirmed: " << p.name << endl;
+            }
+            break;
+        }
+    }
+
+    if (!found)
+        cout << "Passenger not found!" << endl;
+}
+
+// Function to display passengers
+void display(Train &t) {
+    cout << "\nConfirmed Passengers:\n";
+    for (auto p : t.confirmedList) {
+        cout << p.id << " - " << p.name << endl;
+    }
+
+    cout << "\nWaiting List:\n";
+    queue<Passenger> temp = t.waitingList;
+    while (!temp.empty()) {
+        cout << temp.front().id << " - " << temp.front().name << endl;
+        temp.pop();
+    }
+
+    cout << "\nAvailable Seats: " << t.availableSeats << endl;
+}
+
+int main() {
+    Train t = {101, "Express", 2, 2};
+
+    int choice, id;
+    string name;
+
+    while (true) {
+        cout << "\n1. Book Ticket\n2. Cancel Ticket\n3. Display\n4. Exit\n";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter ID and Name: ";
+                cin >> id >> name;
+                bookTicket(t, {id, name});
+                break;
+
+            case 2:
+                cout << "Enter Passenger ID: ";
+                cin >> id;
+                cancelTicket(t, id);
+                break;
+
+            case 3:
+                display(t);
+                break;
+
+            case 4:
+                return 0;
+        }
+    }
+}
